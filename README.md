@@ -5,15 +5,26 @@ Helper library to query network information and return it as either a QCBOR map
 
 ## Using this Libaray
 
-1. Add this repository to your `west.yml` file.
-2. Add `#include "network_info.h"` to your calling file
-3. Call `network_info_init()` to initialize the library
-4. Write network info to log files:
+1. Add this repository to your `west.yml` file `projects` section (be sure to
+   update the revision number to newest/desired):
+
+    ```yaml
+    projects:
+      - name: zephyr-network-info
+        path: src/network_info
+        revision: cc89936517900cf9142af48e06188240b99cd4b9
+        url: https://github.com/golioth/zephyr-network-info
+    ```
+3. Add `network_info/` to your `.gitignore`
+4. Add `add_subdirectory(src/network_info)` to your project CMakeLists.txt
+5. Add `#include "network_info.h"` to your calling file
+6. Call `network_info_init()` to initialize the library
+7. Write network info to log files:
 
     ```c
     network_info_log()
     ```
-5. Return network info as a Golioth RPC:
+8. Return network info as a Golioth RPC:
 
     ```c
     static enum golioth_rpc_status on_get_network_info(QCBORDecodeContext *request_params_array,
