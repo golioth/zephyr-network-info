@@ -45,6 +45,18 @@ Helper library to query network information and return it as either a QCBOR map
     }
     ```
 
+### Adding support for boards that use the Modem Info library
+
+Boards that use Nordic's Modem Info library, like the nRF9160, can use this
+network info library. After following the steps above, add the following symbols
+to the conf file for your board in the boards directory:
+
+```
+# Add Network Info Support
+CONFIG_MODEM_INFO=y
+CONFIG_GOLIOTH_RPC_MAX_RESPONSE_LEN=512
+```
+
 ## Adding a network_info file for a new board
 
 This library holds device-specific files for returning network info. Only one of
