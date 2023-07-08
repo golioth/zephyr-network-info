@@ -31,6 +31,75 @@ int network_info_init(void);
  */
 int network_info_add_to_map(QCBOREncodeContext *response_detail_map);
 
+#ifdef CONFIG_MODEM_INFO
+
+/**
+ * @brief Write modem signal strength as a LOG message
+ */
+void modem_info_log_rsrp(void);
+
+/**
+ * @brief Write modem current LTE band as a LOG message
+ */
+void modem_info_log_cur_band(void);
+
+/**
+ * @brief Write modem supported LTE bands as a LOG message
+ */
+void modem_info_log_sup_band(void);
+
+/**
+ * @brief Write modem tracking area code as a LOG message
+ */
+void modem_info_log_area_code(void);
+
+/**
+ * @brief Write modem current mode as a LOG message
+ */
+void modem_info_log_ue_mode(void);
+
+/**
+ * @brief Write modem current operator name as a LOG message
+ */
+void modem_info_log_operator(void);
+
+/**
+ * @brief Write modem cell ID as a LOG message
+ */
+void modem_info_log_cell_id(void);
+
+/**
+ * @brief Write modem IP address as a LOG message
+ */
+void modem_info_log_ip_address(void);
+
+/**
+ * @brief Write modem firmware version as a LOG message
+ */
+void modem_info_log_fw_version(void);
+
+/**
+ * @brief Write modem LTE-M support mode as a LOG message
+ */
+void modem_info_log_lte_mode(void);
+
+/**
+ * @brief Write modem NB-IoT support mode as a LOG message
+ */
+void modem_info_log_nbiot_mode(void);
+
+/**
+ * @brief Write modem GPS support mode as a LOG message
+ */
+void modem_info_log_gps_mode(void);
+
+/**
+ * @brief Write modem mobile network time and date as a LOG message
+ */
+void modem_info_log_date_time(void);
+
+#endif /* CONFIG_MODEM_INFO */
+
 /**
  * @brief Write network information as a LOG message
  *
@@ -39,4 +108,4 @@ int network_info_add_to_map(QCBOREncodeContext *response_detail_map);
  */
 int network_info_log(void);
 
-#endif
+#endif /* __NETWORK_INFO_H__ */
