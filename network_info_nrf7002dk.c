@@ -7,6 +7,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 
+#include <net/golioth/rpc.h>
 #include <network_info.h>
 #include "../wifi_util.h"
 
@@ -14,8 +15,9 @@ int network_info_init(void) {
 	return 0;
 }
 
-int network_info_add_to_map(QCBOREncodeContext *response_detail_map)
+int network_info_add_to_map(zcbor_state_t *response_detail_map)
 {
+	bool ok;
 	struct wifi_iface_status w_status = { 0 };
 
 	cmd_wifi_status(&w_status);
@@ -24,32 +26,46 @@ int network_info_add_to_map(QCBOREncodeContext *response_detail_map)
 
 	if (w_status.state >= WIFI_STATE_ASSOCIATED) {
 		uint8_t mac_string_buf[sizeof("xx:xx:xx:xx:xx:xx")];
-		QCBOREncode_AddSZStringToMap(response_detail_map,
-					     "Interface Mode",
-					     wifi_mode_txt(w_status.iface_mode));
-		QCBOREncode_AddSZStringToMap(response_detail_map,
-					     "Link Mode",
-					     wifi_link_mode_txt(w_status.link_mode));
-		QCBOREncode_AddSZStringToMap(response_detail_map,
-					     "SSID", w_status.ssid);
-		QCBOREncode_AddSZStringToMap(response_detail_map,
-					     "BSSID",
-					     net_sprint_ll_addr_buf(w_status.bssid,
-								    WIFI_MAC_ADDR_LEN,
-								    mac_string_buf,
-								    sizeof(mac_string_buf))
-					     );
-		QCBOREncode_AddSZStringToMap(response_detail_map, "Band",
-					     wifi_band_txt(w_status.band));
-		QCBOREncode_AddDoubleToMap(response_detail_map,
-					   "Channel", w_status.channel);
-		QCBOREncode_AddSZStringToMap(response_detail_map,
-					     "Security",
-					     wifi_security_txt(w_status.security));
-		QCBOREncode_AddSZStringToMap(response_detail_map, "MFP", wifi_mfp_txt(w_status.mfp));
-		QCBOREncode_AddDoubleToMap(response_detail_map, "RSSI", w_status.rssi);
+		net_sprint_ll_addr_buf(w_status.bssid,
+				       WIFI_MAC_ADDR_LEN,
+				       mac_string_buf,
+				       sizeof(mac_string_buf));
+
+		ok = zcbor_tstr_put_lit(response_detail_map, "Interface Mode") &&
+		     zcbor_tstr_put_term(response_detail_map,
+				         wifi_mode_txt(w_status.iface_mode)) &&
+		     zcbor_tstr_put_lit(response_detail_map, "Link Mode") &&
+		     zcbor_tstr_put_term(response_detail_map,
+				         wifi_link_mode_txt(w_status.link_mode)) &&
+		     zcbor_tstr_put_lit(response_detail_map, "SSID") &&
+		     zcbor_tstr_put_term(response_detail_map, w_status.ssid) &&
+		     zcbor_tstr_put_lit(response_detail_map, "BSSID") &&
+		     zcbor_tstr_put_term(response_detail_map, mac_string_buf) &&
+		     zcbor_tstr_put_lit(response_detail_map, "Band") &&
+		     zcbor_tstr_put_term(response_detail_map,
+				         wifi_band_txt(w_status.band)) &&
+		     zcbor_tstr_put_lit(response_detail_map, "Channel") &&
+		     zcbor_tstr_put_term(response_detail_map, w_status.channel) &&
+		     zcbor_tstr_put_lit(response_detail_map, "Security") &&
+		     zcbor_tstr_put_term(response_detail_map,
+				         wifi_security_txt(w_status.security)) &&
+		     zcbor_tstr_put_lit(response_detail_map, "MFP") &&
+		     zcbor_tstr_put_term(response_detail_map,
+				         wifi_mfp_txt(w_status.mfp)) &&
+		     zcbor_tstr_put_lit(response_detail_map, "RSSI") &&
+		     zcbor_tstr_put_term(response_detail_map, w_status.rssi);
+
+		if (!ok) {
+			LOG_ERR("Failed to encode value");
+			return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
+		}
 	}
-	return 0;
+
+	return GOLIOTH_RPC_OK;
+
+rpc_exhausted:
+	LOG_ERR("Failed to encode value");
+	return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
 }
 
 int network_info_log(void)

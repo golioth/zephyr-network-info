@@ -7,19 +7,27 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(golioth_iot, LOG_LEVEL_DBG);
 
+#include <net/golioth/rpc.h>
 #include <network_info.h>
 
 int __attribute__((weak)) network_info_init(void) {
 	return 0;
 }
 
-int __attribute__((weak)) network_info_add_to_map(QCBOREncodeContext *response_detail_map)
+int __attribute__((weak)) network_info_add_to_map(zcbor_state_t *response_detail_map)
 {
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "No Network Info",
-				     "Network reporting not implemented "
-				     "for this board");
-	return 0;
+	bool ok;
+
+	ok = zcbor_tstr_put_lit(response_detail_map, "No Network Info") &&
+	     zcbor_tstr_put_lit(response_detail_map,
+				"Network reporting not implemented for this hardware");
+
+	if (!ok) {
+		LOG_ERR("Failed to encode value");
+		return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
+	}
+
+	return GOLIOTH_RPC_OK;
 }
 
 int __attribute__((weak)) network_info_log(void)

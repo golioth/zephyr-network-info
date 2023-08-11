@@ -7,7 +7,7 @@
 #ifndef __NETWORK_INFO_H__
 #define __NETWORK_INFO_H__
 
-#include <qcbor/qcbor.h>
+#include <zcbor_encode.h>
 
 /**
  * @brief Initialize the Network Info file for this board
@@ -29,7 +29,7 @@ int network_info_init(void);
  * @retval 0 On success
  * @retval <0 On failure
  */
-int network_info_add_to_map(QCBOREncodeContext *response_detail_map);
+int network_info_add_to_map(zcbor_state_t *response_detail_map);
 
 /**
  * @brief Write network information as a LOG message

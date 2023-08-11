@@ -7,8 +7,9 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 
-#include <network_info.h>
 #include <modem/modem_info.h>
+#include <net/golioth/rpc.h>
+#include <network_info.h>
 
 int network_info_init(void)
 {
@@ -20,63 +21,107 @@ int network_info_init(void)
 	return 0;
 }
 
-int network_info_add_to_map(QCBOREncodeContext *response_detail_map)
+int network_info_add_to_map(zcbor_state_t *response_detail_map)
 {
 	char sbuf[128];
-	modem_info_string_get(MODEM_INFO_RSRP, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "Signal strength",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_CUR_BAND, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "Current LTE band",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_SUP_BAND, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "Supported LTE bands",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_AREA_CODE, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "Tracking area code",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_UE_MODE, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "Current mode",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_OPERATOR, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "Current operator name",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_CELLID, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "Cell ID of the device",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_IP_ADDRESS, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "IP address of the device",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_FW_VERSION, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "Modem firmware version",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_LTE_MODE, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "LTE-M support mode",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_NBIOT_MODE, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "NB-IoT support mode",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_GPS_MODE, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "GPS support mode",
-				     sbuf);
-	modem_info_string_get(MODEM_INFO_DATE_TIME, sbuf, sizeof(sbuf));
-	QCBOREncode_AddSZStringToMap(response_detail_map,
-				     "Mobile network time and date",
-				     sbuf);
+	bool ok;
 
-	return 0;
+	modem_info_string_get(MODEM_INFO_RSRP, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "Signal strength") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_CUR_BAND, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "Current LTE band") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_SUP_BAND, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "Supported LTE bands") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_AREA_CODE, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "Tracking area code") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_UE_MODE, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "Current mode") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_OPERATOR, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "Current operator name") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_CELLID, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "Cell ID of the device") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_IP_ADDRESS, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "IP address of the device") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_FW_VERSION, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "Modem firmware version") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_LTE_MODE, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "LTE-M support mode") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_NBIOT_MODE, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "NB-IoT support mode") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_GPS_MODE, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "GPS support mode") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	modem_info_string_get(MODEM_INFO_DATE_TIME, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "Mobile network time and date") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
+	return GOLIOTH_RPC_OK;
+
+rpc_exhausted:
+	LOG_ERR("Failed to encode value");
+	return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
 }
 
 int network_info_log(void)
