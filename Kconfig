@@ -1,0 +1,12 @@
+#
+# Copyright (C) 2023 Golioth, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+config NETWORK_INFO
+	bool "Return network information to a Golioth RPC or Log function"
+	default n
+	help
+	  Enable helper library to gather and format network information
+	  for Remote Procedure Call (RPC) or Logging
