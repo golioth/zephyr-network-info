@@ -10,8 +10,9 @@ LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 #include <modem/modem_info.h>
 #include <net/golioth/rpc.h>
 #include <network_info.h>
+#include <zephyr/init.h>
 
-int network_info_init(void)
+static int network_info_init(void)
 {
 	int err = modem_info_init();
 	if (err) {
@@ -20,6 +21,7 @@ int network_info_init(void)
 	}
 	return 0;
 }
+SYS_INIT(network_info_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 
 int network_info_add_to_map(zcbor_state_t *response_detail_map)
 {
