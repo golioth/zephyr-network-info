@@ -1,9 +1,9 @@
 # Golioth Zephyr Network Info Library
 
-Helper library to query network information and return it as either a QCBOR map
+Helper library to query network information and return it as either a zcbor map
 (useful for Golioth Remote Procedure Calls) or as a Zephyr log message.
 
-## Using this Libaray
+## Using this Library
 
 1. Add this repository to your `west.yml` file `projects` section (be sure to
    update the revision number to newest/desired):
@@ -11,41 +11,32 @@ Helper library to query network information and return it as either a QCBOR map
    ```yaml
    projects:
      - name: zephyr-network-info
-       path: src/network_info
-       revision: cc89936517900cf9142af48e06188240b99cd4b9
+       path: modules/lib/network-info
+       revision: v1.0.0
        url: https://github.com/golioth/zephyr-network-info
    ```
 
-2. Add `network_info/` to your project `.gitignore`
-3. Add `add_subdirectory(src/network_info)` to your project `CMakeLists.txt`
-4. Add `#include "network_info.h"` to your calling file
-5. Call `network_info_init()` to initialize the library
-6. Write network info to log files:
+2. Enable the library in prj.conf: `CONFIG_NETWORK_INFO=y`
+3. Add `#include "network_info.h"` to your calling file
+4. Call your desired function
+   2. Write network info to log files:
 
-   ```c
-   network_info_log()
-   ```
+      ```c
+      network_info_log()
+      ```
 
-7. Return network info as a Golioth RPC:
+   2. Return network info as a Golioth RPC:
 
-   ```c
-   static enum golioth_rpc_status on_get_network_info(QCBORDecodeContext *request_params_array,
-                           QCBOREncodeContext *response_detail_map,
-                           void *callback_arg)
-   {
-       QCBORError qerr;
+      ```c
+      static enum golioth_rpc_status on_get_network_info(zcbor_state_t *request_params_array,
+                                 zcbor_state_t *response_detail_map,
+                                 void *callback_arg)
+      {
+          network_info_add_to_map(response_detail_map);
 
-       qerr = QCBORDecode_GetError(request_params_array);
-       if (qerr != QCBOR_SUCCESS) {
-           LOG_ERR("Failed to decode array items: %d (%s)", qerr, qcbor_err_to_str(qerr));
-           return GOLIOTH_RPC_INVALID_ARGUMENT;
-       }
-
-       network_info_add_to_map(response_detail_map);
-
-       return GOLIOTH_RPC_OK;
-   }
-   ```
+          return GOLIOTH_RPC_OK;
+      }
+      ```
 
 ### Adding support for boards that use the Modem Info library
 
@@ -70,8 +61,6 @@ these files should be built into a project. This is selected using the
    1. Add `#include <network_info.h>`
 
    2. Implement required functions:
-
-      - `int network_info_init(void)`
 
       - `int network_info_add_to_map(QCBOREncodeContext *response_detail_map)`
 
