@@ -11,10 +11,6 @@ LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 #include <network_info.h>
 #include "../wifi_util.h"
 
-int network_info_init(void) {
-	return 0;
-}
-
 int network_info_add_to_map(zcbor_state_t *response_detail_map)
 {
 	bool ok;

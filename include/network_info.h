@@ -10,14 +10,6 @@
 #include <zcbor_encode.h>
 
 /**
- * @brief Initialize the Network Info file for this board
- *
- * @retval 0 On success
- * @retval <0 On failure
- */
-int network_info_init(void);
-
-/**
  * @brief Populate a QCBOR map with Network Information
  *
  * Query the network information for this board and write the results to a QCBOR
