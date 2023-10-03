@@ -8,7 +8,7 @@
 LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 
 #include <modem/modem_info.h>
-#include <net/golioth/rpc.h>
+#include <golioth/rpc.h>
 #include <network_info.h>
 #include <zephyr/init.h>
 

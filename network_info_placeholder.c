@@ -7,7 +7,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(golioth_iot, LOG_LEVEL_DBG);
 
-#include <net/golioth/rpc.h>
+#include <golioth/rpc.h>
 #include <network_info.h>
 
 int __attribute__((weak)) network_info_add_to_map(zcbor_state_t *response_detail_map)

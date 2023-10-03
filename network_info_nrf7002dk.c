@@ -7,7 +7,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 
-#include <net/golioth/rpc.h>
+#include <golioth/rpc.h>
 #include <network_info.h>
 #include "../wifi_util.h"
 
