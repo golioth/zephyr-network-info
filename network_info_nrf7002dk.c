@@ -9,7 +9,21 @@ LOG_MODULE_DECLARE(net_info, LOG_LEVEL_DBG);
 
 #include <net/golioth/rpc.h>
 #include <network_info.h>
-#include "../wifi_util.h"
+#include <zephyr/net/wifi_mgmt.h>
+#include <zcbor_encode.h>
+
+int __attribute__((weak)) cmd_wifi_status(struct wifi_iface_status *status)
+{
+	/* Rely on the app to implement this function */
+	return 0;
+}
+
+char __attribute__((weak)) *net_sprint_ll_addr_buf(const uint8_t *ll, uint8_t ll_len,
+						   char *buf, int buflen)
+{
+	/* This is already extern in net/ip/net_private.h */
+	return "ERR";
+}
 
 int network_info_add_to_map(zcbor_state_t *response_detail_map)
 {
@@ -17,8 +31,6 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 	struct wifi_iface_status w_status = { 0 };
 
 	cmd_wifi_status(&w_status);
-
-	QCBOREncode_AddSZStringToMap(response_detail_map, "State", wifi_state_txt(w_status.state));
 
 	if (w_status.state >= WIFI_STATE_ASSOCIATED) {
 		uint8_t mac_string_buf[sizeof("xx:xx:xx:xx:xx:xx")];
@@ -41,7 +53,7 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 		     zcbor_tstr_put_term(response_detail_map,
 				         wifi_band_txt(w_status.band)) &&
 		     zcbor_tstr_put_lit(response_detail_map, "Channel") &&
-		     zcbor_tstr_put_term(response_detail_map, w_status.channel) &&
+		     zcbor_uint32_put(response_detail_map, w_status.channel) &&
 		     zcbor_tstr_put_lit(response_detail_map, "Security") &&
 		     zcbor_tstr_put_term(response_detail_map,
 				         wifi_security_txt(w_status.security)) &&
@@ -49,7 +61,7 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 		     zcbor_tstr_put_term(response_detail_map,
 				         wifi_mfp_txt(w_status.mfp)) &&
 		     zcbor_tstr_put_lit(response_detail_map, "RSSI") &&
-		     zcbor_tstr_put_term(response_detail_map, w_status.rssi);
+		     zcbor_int32_put(response_detail_map, w_status.rssi);
 
 		if (!ok) {
 			LOG_ERR("Failed to encode value");
@@ -58,10 +70,6 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 	}
 
 	return GOLIOTH_RPC_OK;
-
-rpc_exhausted:
-	LOG_ERR("Failed to encode value");
-	return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
 }
 
 int network_info_log(void)
