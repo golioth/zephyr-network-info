@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
+LOG_MODULE_DECLARE(net_info, LOG_LEVEL_DBG);
 
 #include <modem/modem_info.h>
 #include <net/golioth/rpc.h>
