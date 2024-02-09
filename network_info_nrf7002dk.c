@@ -9,7 +9,13 @@ LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 
 #include <golioth/rpc.h>
 #include <network_info.h>
-#include "../wifi_util.h"
+
+/*
+ * This WiFi utility is a file located in the golioth/zephyr-training repository. It is specific to
+ * using WiFi with the nRF7002. However, we blieve there is work in progress to add the 7002 to the
+ * Zephyr WiFi abstraction layer which would remove the need to use this helper file.
+ */
+#include <wifi_util.h>
 
 int network_info_add_to_map(zcbor_state_t *response_detail_map)
 {
@@ -18,7 +24,8 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 
 	cmd_wifi_status(&w_status);
 
-	QCBOREncode_AddSZStringToMap(response_detail_map, "State", wifi_state_txt(w_status.state));
+	ok = zcbor_tstr_put_lit(response_detail_map, "State") &&
+		zcbor_tstr_put_term(response_detail_map, wifi_state_txt(w_status.state));
 
 	if (w_status.state >= WIFI_STATE_ASSOCIATED) {
 		uint8_t mac_string_buf[sizeof("xx:xx:xx:xx:xx:xx")];
@@ -41,7 +48,7 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 		     zcbor_tstr_put_term(response_detail_map,
 				         wifi_band_txt(w_status.band)) &&
 		     zcbor_tstr_put_lit(response_detail_map, "Channel") &&
-		     zcbor_tstr_put_term(response_detail_map, w_status.channel) &&
+		     zcbor_uint32_put(response_detail_map, w_status.channel) &&
 		     zcbor_tstr_put_lit(response_detail_map, "Security") &&
 		     zcbor_tstr_put_term(response_detail_map,
 				         wifi_security_txt(w_status.security)) &&
@@ -49,7 +56,7 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 		     zcbor_tstr_put_term(response_detail_map,
 				         wifi_mfp_txt(w_status.mfp)) &&
 		     zcbor_tstr_put_lit(response_detail_map, "RSSI") &&
-		     zcbor_tstr_put_term(response_detail_map, w_status.rssi);
+		     zcbor_int32_put(response_detail_map, w_status.rssi);
 
 		if (!ok) {
 			LOG_ERR("Failed to encode value");
@@ -58,10 +65,6 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 	}
 
 	return GOLIOTH_RPC_OK;
-
-rpc_exhausted:
-	LOG_ERR("Failed to encode value");
-	return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
 }
 
 int network_info_log(void)
@@ -86,7 +89,7 @@ int network_info_log(void)
 					       );
 		LOG_DBG("Band: %s", wifi_band_txt(w_status.band));
 		LOG_DBG("Channel: %d", w_status.channel);
-		LOG_DBG("Securit: %sy", wifi_security_txt(w_status.security));
+		LOG_DBG("Security: %s", wifi_security_txt(w_status.security));
 		LOG_DBG("MFP: %s", wifi_mfp_txt(w_status.mfp));
 		LOG_DBG("RSSI: %d", w_status.rssi);
 	}
