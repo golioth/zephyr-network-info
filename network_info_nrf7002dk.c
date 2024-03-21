@@ -26,6 +26,9 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 
 	ok = zcbor_tstr_put_lit(response_detail_map, "State") &&
 		zcbor_tstr_put_term(response_detail_map, wifi_state_txt(w_status.state));
+	if (!ok) {
+		goto rpc_exhausted;
+	}
 
 	if (w_status.state >= WIFI_STATE_ASSOCIATED) {
 		uint8_t mac_string_buf[sizeof("xx:xx:xx:xx:xx:xx")];
@@ -36,35 +39,62 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 
 		ok = zcbor_tstr_put_lit(response_detail_map, "Interface Mode") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_mode_txt(w_status.iface_mode)) &&
-		     zcbor_tstr_put_lit(response_detail_map, "Link Mode") &&
-		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_link_mode_txt(w_status.link_mode)) &&
-		     zcbor_tstr_put_lit(response_detail_map, "SSID") &&
-		     zcbor_tstr_put_term(response_detail_map, w_status.ssid) &&
-		     zcbor_tstr_put_lit(response_detail_map, "BSSID") &&
-		     zcbor_tstr_put_term(response_detail_map, mac_string_buf) &&
-		     zcbor_tstr_put_lit(response_detail_map, "Band") &&
-		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_band_txt(w_status.band)) &&
-		     zcbor_tstr_put_lit(response_detail_map, "Channel") &&
-		     zcbor_uint32_put(response_detail_map, w_status.channel) &&
-		     zcbor_tstr_put_lit(response_detail_map, "Security") &&
-		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_security_txt(w_status.security)) &&
-		     zcbor_tstr_put_lit(response_detail_map, "MFP") &&
-		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_mfp_txt(w_status.mfp)) &&
-		     zcbor_tstr_put_lit(response_detail_map, "RSSI") &&
-		     zcbor_int32_put(response_detail_map, w_status.rssi);
-
+				         wifi_mode_txt(w_status.iface_mode));
 		if (!ok) {
-			LOG_ERR("Failed to encode value");
-			return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
+			goto rpc_exhausted;
+		}
+		ok = zcbor_tstr_put_lit(response_detail_map, "Link Mode") &&
+		     zcbor_tstr_put_term(response_detail_map,
+				         wifi_link_mode_txt(w_status.link_mode));
+		if (!ok) {
+			goto rpc_exhausted;
+		}
+		ok = zcbor_tstr_put_lit(response_detail_map, "SSID") &&
+		     zcbor_tstr_put_term(response_detail_map, w_status.ssid);
+		if (!ok) {
+			goto rpc_exhausted;
+		}
+		ok = zcbor_tstr_put_lit(response_detail_map, "BSSID") &&
+		     zcbor_tstr_put_term(response_detail_map, mac_string_buf);
+		if (!ok) {
+			goto rpc_exhausted;
+		}
+		ok = zcbor_tstr_put_lit(response_detail_map, "Band") &&
+		     zcbor_tstr_put_term(response_detail_map,
+				         wifi_band_txt(w_status.band));
+		if (!ok) {
+			goto rpc_exhausted;
+		}
+		ok = zcbor_tstr_put_lit(response_detail_map, "Channel") &&
+		     zcbor_uint32_put(response_detail_map, w_status.channel);
+		if (!ok) {
+			goto rpc_exhausted;
+		}
+		ok = zcbor_tstr_put_lit(response_detail_map, "Security") &&
+		     zcbor_tstr_put_term(response_detail_map,
+				         wifi_security_txt(w_status.security));
+		if (!ok) {
+			goto rpc_exhausted;
+		}
+		ok = zcbor_tstr_put_lit(response_detail_map, "MFP") &&
+		     zcbor_tstr_put_term(response_detail_map,
+				         wifi_mfp_txt(w_status.mfp));
+		if (!ok) {
+			goto rpc_exhausted;
+		}
+		ok = zcbor_tstr_put_lit(response_detail_map, "RSSI") &&
+		     zcbor_int32_put(response_detail_map, w_status.rssi);
+		if (!ok) {
+			goto rpc_exhausted;
 		}
 	}
 
 	return GOLIOTH_RPC_OK;
+
+rpc_exhausted:
+	LOG_ERR("Failed to encode some values; response might be too long (CONFIG_GOLIOTH_RPC_MAX_RESPONSE_LEN: %d)",
+		CONFIG_GOLIOTH_RPC_MAX_RESPONSE_LEN);
+	return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
 }
 
 int network_info_log(void)
