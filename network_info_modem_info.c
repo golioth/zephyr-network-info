@@ -122,7 +122,8 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 	return GOLIOTH_RPC_OK;
 
 rpc_exhausted:
-	LOG_ERR("Failed to encode value");
+	LOG_ERR("Failed to encode some values; response might be too long (CONFIG_GOLIOTH_RPC_MAX_RESPONSE_LEN: %d)",
+		CONFIG_GOLIOTH_RPC_MAX_RESPONSE_LEN);
 	return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
 }
 
