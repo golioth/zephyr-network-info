@@ -25,7 +25,7 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 	cmd_wifi_status(&w_status);
 
 	ok = zcbor_tstr_put_lit(response_detail_map, "State") &&
-		zcbor_tstr_put_term(response_detail_map, wifi_state_txt(w_status.state));
+		zcbor_tstr_put_term(response_detail_map, wifi_state_txt(w_status.state), 128);
 	if (!ok) {
 		goto rpc_exhausted;
 	}
@@ -39,29 +39,29 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 
 		ok = zcbor_tstr_put_lit(response_detail_map, "Interface Mode") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_mode_txt(w_status.iface_mode));
+				         wifi_mode_txt(w_status.iface_mode), 128);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "Link Mode") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_link_mode_txt(w_status.link_mode));
+				         wifi_link_mode_txt(w_status.link_mode), 128);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "SSID") &&
-		     zcbor_tstr_put_term(response_detail_map, w_status.ssid);
+		     zcbor_tstr_put_term(response_detail_map, w_status.ssid, 128);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "BSSID") &&
-		     zcbor_tstr_put_term(response_detail_map, mac_string_buf);
+		     zcbor_tstr_put_term(response_detail_map, mac_string_buf, 128);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "Band") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_band_txt(w_status.band));
+				         wifi_band_txt(w_status.band), 128);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
@@ -72,13 +72,13 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "Security") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_security_txt(w_status.security));
+				         wifi_security_txt(w_status.security), 128);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "MFP") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_mfp_txt(w_status.mfp));
+				         wifi_mfp_txt(w_status.mfp), 128);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
