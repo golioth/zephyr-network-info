@@ -9,13 +9,26 @@ LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 
 #include <golioth/rpc.h>
 #include <network_info.h>
+#include <zephyr/net/net_if.h>
+/* For net_sprint_ll_addr_buf */
+#include "net_private.h"
+#include <zephyr/net/wifi_mgmt.h>
 
-/*
- * This WiFi utility is a file located in the golioth/zephyr-training repository. It is specific to
- * using WiFi with the nRF7002. However, we blieve there is work in progress to add the 7002 to the
- * Zephyr WiFi abstraction layer which would remove the need to use this helper file.
- */
-#include <wifi_util.h>
+
+#define MAX_WIFI_STR_LEN 64
+
+int cmd_wifi_status(struct wifi_iface_status *status)
+{
+	struct net_if *iface = net_if_get_default();
+
+	if (net_mgmt(NET_REQUEST_WIFI_IFACE_STATUS, iface, status,
+				sizeof(struct wifi_iface_status))) {
+		LOG_INF("Status request failed");
+
+		return -ENOEXEC;
+	}
+	return 0;
+}
 
 int network_info_add_to_map(zcbor_state_t *response_detail_map)
 {
@@ -25,7 +38,7 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 	cmd_wifi_status(&w_status);
 
 	ok = zcbor_tstr_put_lit(response_detail_map, "State") &&
-		zcbor_tstr_put_term(response_detail_map, wifi_state_txt(w_status.state), 128);
+		zcbor_tstr_put_term(response_detail_map, wifi_state_txt(w_status.state), MAX_WIFI_STR_LEN);
 	if (!ok) {
 		goto rpc_exhausted;
 	}
@@ -39,29 +52,29 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 
 		ok = zcbor_tstr_put_lit(response_detail_map, "Interface Mode") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_mode_txt(w_status.iface_mode), 128);
+				         wifi_mode_txt(w_status.iface_mode), MAX_WIFI_STR_LEN);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "Link Mode") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_link_mode_txt(w_status.link_mode), 128);
+				         wifi_link_mode_txt(w_status.link_mode), MAX_WIFI_STR_LEN);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "SSID") &&
-		     zcbor_tstr_put_term(response_detail_map, w_status.ssid, 128);
+		     zcbor_tstr_put_term(response_detail_map, w_status.ssid, MAX_WIFI_STR_LEN);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "BSSID") &&
-		     zcbor_tstr_put_term(response_detail_map, mac_string_buf, 128);
+		     zcbor_tstr_put_term(response_detail_map, mac_string_buf, MAX_WIFI_STR_LEN);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "Band") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_band_txt(w_status.band), 128);
+				         wifi_band_txt(w_status.band), MAX_WIFI_STR_LEN);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
@@ -72,13 +85,13 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "Security") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_security_txt(w_status.security), 128);
+				         wifi_security_txt(w_status.security), MAX_WIFI_STR_LEN);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
 		ok = zcbor_tstr_put_lit(response_detail_map, "MFP") &&
 		     zcbor_tstr_put_term(response_detail_map,
-				         wifi_mfp_txt(w_status.mfp), 128);
+				         wifi_mfp_txt(w_status.mfp), MAX_WIFI_STR_LEN);
 		if (!ok) {
 			goto rpc_exhausted;
 		}
