@@ -9,14 +9,25 @@ LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 
 #include <golioth/rpc.h>
 #include <network_info.h>
+#include <zephyr/net/net_if.h>
+/* For net_sprint_ll_addr_buf */
+#include "net_private.h"
+#include <zephyr/net/wifi_mgmt.h>
 
-/*
- * This WiFi utility is a file located in the golioth/zephyr-training repository. It is specific to
- * using WiFi with the nRF7002. However, we blieve there is work in progress to add the 7002 to the
- * Zephyr WiFi abstraction layer which would remove the need to use this helper file.
- */
-#include <wifi_util.h>
 #define MAX_WIFI_STR_LEN 64
+
+int cmd_wifi_status(struct wifi_iface_status *status)
+{
+	struct net_if *iface = net_if_get_default();
+
+	if (net_mgmt(NET_REQUEST_WIFI_IFACE_STATUS, iface, status,
+				sizeof(struct wifi_iface_status))) {
+		LOG_INF("Status request failed");
+
+		return -ENOEXEC;
+	}
+	return 0;
+}
 
 int network_info_add_to_map(zcbor_state_t *response_detail_map)
 {
