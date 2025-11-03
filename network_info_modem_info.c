@@ -42,6 +42,13 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 		goto rpc_exhausted;
 	}
 
+	modem_info_string_get(MODEM_INFO_IMSI, sbuf, sizeof(sbuf));
+	ok = zcbor_tstr_put_lit(response_detail_map, "IMSI") &&
+	     zcbor_tstr_put_term(response_detail_map, sbuf, 128);
+	if (!ok) {
+		goto rpc_exhausted;
+	}
+
 	modem_info_string_get(MODEM_INFO_SUP_BAND, sbuf, sizeof(sbuf));
 	ok = zcbor_tstr_put_lit(response_detail_map, "Supported LTE bands") &&
 	     zcbor_tstr_put_term(response_detail_map, sbuf, 128);
