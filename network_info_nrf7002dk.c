@@ -10,8 +10,6 @@ LOG_MODULE_REGISTER(net_info, LOG_LEVEL_DBG);
 #include <golioth/rpc.h>
 #include <network_info.h>
 #include <zephyr/net/net_if.h>
-/* For net_sprint_ll_addr_buf */
-#include "net_private.h"
 #include <zephyr/net/wifi_mgmt.h>
 
 #define MAX_WIFI_STR_LEN 64
@@ -45,10 +43,10 @@ int network_info_add_to_map(zcbor_state_t *response_detail_map)
 
 	if (w_status.state >= WIFI_STATE_ASSOCIATED) {
 		uint8_t mac_string_buf[sizeof("xx:xx:xx:xx:xx:xx")];
-		net_sprint_ll_addr_buf(w_status.bssid,
-				       WIFI_MAC_ADDR_LEN,
-				       mac_string_buf,
-				       sizeof(mac_string_buf));
+		snprintk(mac_string_buf, sizeof(mac_string_buf),
+			"%02x:%02x:%02x:%02x:%02x:%02x",
+			w_status.bssid[0], w_status.bssid[1], w_status.bssid[2],
+			w_status.bssid[3], w_status.bssid[4], w_status.bssid[5]);
 
 		ok = zcbor_tstr_put_lit(response_detail_map, "Interface Mode") &&
 		     zcbor_tstr_put_term(response_detail_map,
@@ -124,12 +122,13 @@ int network_info_log(void)
 		LOG_DBG("Interface Mode: %s", wifi_mode_txt(w_status.iface_mode));
 		LOG_DBG("Link Mode: %s", wifi_link_mode_txt(w_status.link_mode));
 		LOG_DBG("SSID: %s", w_status.ssid);
-		LOG_DBG("BSSID: %s",
-			net_sprint_ll_addr_buf(w_status.bssid,
-					       WIFI_MAC_ADDR_LEN,
-					       mac_string_buf,
-					       sizeof(mac_string_buf))
-					       );
+
+		snprintk(mac_string_buf, sizeof(mac_string_buf),
+			"%02x:%02x:%02x:%02x:%02x:%02x",
+			w_status.bssid[0], w_status.bssid[1], w_status.bssid[2],
+			w_status.bssid[3], w_status.bssid[4], w_status.bssid[5]);
+		LOG_DBG("BSSID: %s", mac_string_buf);
+
 		LOG_DBG("Band: %s", wifi_band_txt(w_status.band));
 		LOG_DBG("Channel: %d", w_status.channel);
 		LOG_DBG("Security: %s", wifi_security_txt(w_status.security));
